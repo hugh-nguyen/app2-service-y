@@ -3,7 +3,7 @@ name: Versioning Workflow
 on:
   push:
     branches:
-      - none
+      - main
 
 permissions:
   contents: write
