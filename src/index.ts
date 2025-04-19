@@ -1,27 +1,39 @@
-// app2-service-y
-import express, { Request, Response } from 'express';
+// app2-service-y (Lambda version)
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import axios from 'axios';
 import { instrumentWithAxon } from 'cortex-axon-js';
 
-const app = express();
+instrumentWithAxon("app2");
 
-app.use(instrumentWithAxon("app2"));
-
-axios.defaults.proxy = {
-  host: 'envoy',
-  port: 8080
-};
-
-app.get('/getresult', async (req: Request, res: Response) => {
-  try {
-    const response = await axios.get(`http://localhost/shared-app/service-s/getresult/`);
-    return res.status(response.status).json(["Y=0.0.1", ...response.data]);
-  } catch (err: any) {
-    console.error("Error calling /y/getresult:", err.message);
-    return res.status(500).json({ error: "Something went wrong" });
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  if (event.path === '/getresult' || event.resource === '/getresult') {
+    try {
+      // const response = await axios.get('http://localhost/shared-app/service-s/getresult/');
+      const response = await axios.get('http://hn-cortex.click/shared-app/service-s/getresult/');
+      return {
+        statusCode: response.status,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(["Y=0.0.1", ...response.data])
+      };
+    } catch (err: any) {
+      console.error("Error calling /getresult:", err.message);
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ error: "Something went wrong" })
+      };
+    }
   }
-});
 
-app.listen(80, () => {
-  console.log('service-y listening on port 80');
-});
+  return {
+    statusCode: 404,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ error: "Not found" })
+  };
+};
