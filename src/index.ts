@@ -13,7 +13,7 @@ app.get('/getresult', async (req: Request, res: Response) => {
   try {
     // const response = await axios.get('http://localhost/shared-app/service-s/getresult/');
     const response = await axios.get('http://hn-cortex.click/shared-app/service-s/getresult/');
-    const payload = ["Y=0.0.1", ...response.data];
+    const payload = ["Y=0.0.2", ...response.data];
     res.status(response.status).json(payload);
   } catch (err: any) {
     console.error("Error calling /getresult:", err.message);
